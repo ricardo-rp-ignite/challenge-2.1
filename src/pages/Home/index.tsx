@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { MdAddShoppingCart } from 'react-icons/md';
 
 import { ProductList } from './styles';
-import { api } from '../../services/api';
+import { fetchAllProducts } from '../../services/api';
 import { formatPrice } from '../../util/format';
 import { useCart } from '../../hooks/useCart';
+import { toast } from 'react-toastify';
 
 interface Product {
   id: number;
@@ -22,7 +23,7 @@ interface CartItemsAmount {
 }
 
 const Home = (): JSX.Element => {
-  // const [products, setProducts] = useState<ProductFormatted[]>([]);
+  const [products, setProducts] = useState<ProductFormatted[]>([]);
   // const { addProduct, cart } = useCart();
 
   // const cartItemsAmount = cart.reduce((sumAmount, product) => {
@@ -31,7 +32,13 @@ const Home = (): JSX.Element => {
 
   useEffect(() => {
     async function loadProducts() {
-      // TODO
+      try {
+        const apiProducts = await fetchAllProducts()
+        const apiProductsFormatted = formatProducts(apiProducts)
+        setProducts(apiProductsFormatted)
+      } catch (error) {
+        toast.error('Houve um erro ao buscar os produtos.')
+      }
     }
 
     loadProducts();
@@ -39,18 +46,20 @@ const Home = (): JSX.Element => {
 
   function handleAddProduct(id: number) {
     // TODO
+    console.log(`Adding product ${id}`)
   }
 
   return (
     <ProductList>
+      {products.map(product => (
       <li>
-        <img src="https://rocketseat-cdn.s3-sa-east-1.amazonaws.com/modulo-redux/tenis1.jpg" alt="Tênis de Caminhada Leve Confortável" />
-        <strong>Tênis de Caminhada Leve Confortável</strong>
-        <span>R$ 179,90</span>
+        <img src={product.image} alt={product.title} />
+        <strong>{product.title}</strong>
+        <span>{product.priceFormatted}</span>
         <button
           type="button"
           data-testid="add-product-button"
-        // onClick={() => handleAddProduct(product.id)}
+        onClick={() => handleAddProduct(product.id)}
         >
           <div data-testid="cart-product-quantity">
             <MdAddShoppingCart size={16} color="#FFF" />
@@ -60,8 +69,16 @@ const Home = (): JSX.Element => {
           <span>ADICIONAR AO CARRINHO</span>
         </button>
       </li>
+      ))}
     </ProductList>
   );
 };
 
 export default Home;
+
+function formatProducts(products: Product[]): ProductFormatted[] {
+  return products.map(product => ({
+    ...product,
+    priceFormatted: formatPrice(product.price)
+  }))
+}
