@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchProductById, fetchStockById } from '../services/api';
 import { Product } from '../types';
@@ -21,16 +21,25 @@ interface CartContextData {
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
+const storageKey = '@RocketShoes:cart'
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    const storagedCart = localStorage.getItem('@RocketShoes:cart');
+    const storagedCart = localStorage.getItem(storageKey);
 
     return storagedCart ? JSON.parse(storagedCart) : [];
   });
 
+  useEffect(() => {
+    localStorage.setItem(storageKey, JSON.stringify(cart))
+  }, [cart])
+
+  function findProductIndexById(productId: number) {
+    return cart.findIndex(product => product.id === productId);
+  }
+
   const addProduct = async (productId: number) => {
     try {
-      const productIndex = cart.findIndex(product => product.id === productId);
+      const productIndex = findProductIndexById(productId)
 
       if (productIndex === -1) { // Product not on cart
         const product = await fetchProductById(productId);
@@ -63,8 +72,16 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   }: UpdateProductAmount) => {
     try {
       // TODO
+      if (amount <= 0) return;
+      const productIndex = cart.findIndex(product => product.id === productId);
+
+      setCart(oldCart => {
+        const newCart = oldCart.map(product => ({ ...product }));
+        newCart[productIndex].amount = amount;
+        return newCart;
+      })
     } catch {
-      // TODO
+      toast.error('Erro na alteração de quantidade do produto');
     }
   };
 
