@@ -91,6 +91,14 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       const productIndex = cart.findIndex(product => product.id === productId);
       if (productIndex === -1) throw new Error('Product not in cart.');
 
+      if (
+        amount > cart[productIndex].amount
+        && amount > await fetchStockById(productId)
+      ) {
+        toast.error('Quantidade solicitada fora de estoque');
+        return;
+      }
+
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
         newCart[productIndex].amount = amount;
