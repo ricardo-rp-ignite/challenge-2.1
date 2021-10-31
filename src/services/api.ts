@@ -6,12 +6,12 @@ export const api = axios.create({
 });
 
 export const fetchStockById = (productId: number) =>
-  api.get<Stock>(`/stock/${productId}`).then(response => response.data.amount);
+  api.get<Stock>(`/stock/${productId}`).then(resp => resp.data.amount);
 
 type FetchProductResult = Omit<Product, 'amount'>
 
 export const fetchProductById = (productId: number) =>
-  api.get<FetchProductResult>(`/products/${productId}`)
+  api.get<FetchProductResult>(`/products/${productId}`).then(resp => resp.data)
 
 export const fetchAllProducts = () =>
-  api.get<Product[]>('products').then(response => response.data)
+  api.get<Product[]>('products').then(resp => resp.data)

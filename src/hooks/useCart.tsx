@@ -21,17 +21,21 @@ interface CartContextData {
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
-const storageKey = '@RocketShoes:cart'
+const storageKey = '@RocketShoes:cart';
+const readCart = () => {
+  const storagedCart = localStorage.getItem(storageKey);
+  return storagedCart ? JSON.parse(storagedCart) : [];
+}
+const saveCart = (cart: Product[]) => {
+  localStorage.setItem(storageKey, JSON.stringify(cart));
+}
+
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
-  const [cart, setCart] = useState<Product[]>(() => {
-    const storagedCart = localStorage.getItem(storageKey);
+  const [cart, setCart] = useState<Product[]>(readCart);
 
-    return storagedCart ? JSON.parse(storagedCart) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(cart))
-  }, [cart])
+  // useEffect(() => {
+  //   saveCart(cart)
+  // }, [cart])
 
   function findProductIndexById(productId: number) {
     return cart.findIndex(product => product.id === productId);
@@ -49,7 +53,12 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         }
 
         const product = await fetchProductById(productId);
-        setCart(oldCart => [...oldCart, { ...product, amount: 1 }]);
+        setCart(oldCart => {
+          const newCart = [...oldCart, { ...product, amount: 1 }]
+          saveCart(newCart);
+          return newCart;
+        });
+
         return;
       }
 
@@ -61,6 +70,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
         newCart[productIndex].amount++;
+        saveCart(newCart);
         return newCart;
       })
     } catch {
@@ -73,9 +83,15 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       const productIndex = findProductIndexById(productId)
       if (productIndex === -1) throw new Error('Product not in cart.');
 
-      setCart(oldCart =>
-        oldCart.slice(0, productIndex).concat(oldCart.slice(productIndex + 1))
-      );
+      setCart(oldCart => {
+        const newCart = oldCart
+          .slice(0, productIndex)
+          .concat(oldCart.slice(productIndex + 1));
+
+        saveCart(newCart);
+        return newCart;
+      });
+
     } catch {
       toast.error('Erro na remoção do produto');
     }
@@ -88,6 +104,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     try {
       // TODO
       if (amount <= 0) return;
+
       const productIndex = cart.findIndex(product => product.id === productId);
       if (productIndex === -1) throw new Error('Product not in cart.');
 
@@ -102,6 +119,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
         newCart[productIndex].amount = amount;
+        saveCart(newCart);
         return newCart;
       })
     } catch {
