@@ -70,9 +70,14 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      const productIndex = findProductIndexById(productId)
+      if (productIndex === -1) throw new Error('Product not in cart.');
+
+      setCart(oldCart =>
+        oldCart.slice(0, productIndex).concat(oldCart.slice(productIndex + 1))
+      );
     } catch {
-      // TODO
+      toast.error('Erro na remoção do produto');
     }
   };
 
@@ -84,6 +89,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
       // TODO
       if (amount <= 0) return;
       const productIndex = cart.findIndex(product => product.id === productId);
+      if (productIndex === -1) throw new Error('Product not in cart.');
 
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
