@@ -52,7 +52,7 @@ const Home = (): JSX.Element => {
   return (
     <ProductList>
       {products.map(({ id, image, title, priceFormatted }) => (
-        <li>
+        <li key={id}>
           <img src={image} alt={title} />
           <strong>{title}</strong>
           <span>{priceFormatted}</span>
