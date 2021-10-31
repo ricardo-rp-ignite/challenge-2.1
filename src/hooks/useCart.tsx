@@ -37,16 +37,26 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     return cart.findIndex(product => product.id === productId);
   }
 
-  const addProduct = async (productId: number) => {
+  const addProduct = async (productId: number): Promise<void> => {
     try {
       const productIndex = findProductIndexById(productId)
+      const stock = fetchStockById(productId)
 
       if (productIndex === -1) { // Product not on cart
+        if (await stock <= 0) {
+          toast.error('Quantidade solicitada fora de estoque');
+          return;
+        }
+
         const product = await fetchProductById(productId);
         setCart(oldCart => [...oldCart, { ...product, amount: 1 }]);
         return;
       }
 
+      if (await stock <= cart[productIndex].amount) {
+        toast.error('Quantidade solicitada fora de estoque');
+        return;
+      }
       // Product on cart
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
