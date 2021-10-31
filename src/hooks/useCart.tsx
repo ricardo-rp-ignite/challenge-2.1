@@ -38,20 +38,19 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         }
 
         const product = await fetchProductById(productId);
-        setCart(oldCart => {
+        return setCart(oldCart => {
           const newCart = [...oldCart, { ...product, amount: 1 }]
           saveCart(newCart);
           return newCart;
         });
-
-        return;
       }
+      // Product on cart
 
       if (await stock <= cart[productIndex].amount) {
         toast.error('Quantidade solicitada fora de estoque');
         return;
       }
-      // Product on cart
+
       setCart(oldCart => {
         const newCart = oldCart.map(product => ({ ...product }));
         newCart[productIndex].amount++;
@@ -87,10 +86,9 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
       if (amount <= 0) return;
 
-      const productIndex = cart.findIndex(product => product.id === productId);
+      const productIndex = findProductInCart(productId, cart)
       if (productIndex === -1) throw new Error('Product not in cart.');
 
       if (
@@ -121,12 +119,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
   );
 }
 
-export function useCart(): CartContextData {
-  const context = useContext(CartContext);
+export const useCart = (): CartContextData => useContext(CartContext);
 
-  return context;
-}
-
-function findProductInCart(productId: number, cart: Product[]) {
-  return cart.findIndex(product => product.id === productId);
-}
+const findProductInCart = (productId: number, cart: Product[]) =>
+  cart.findIndex(product => product.id === productId);
