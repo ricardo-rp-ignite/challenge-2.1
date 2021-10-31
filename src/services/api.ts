@@ -14,4 +14,4 @@ export const fetchProductById = (productId: number) =>
   api.get<FetchProductResult>(`/products/${productId}`)
 
 export const fetchAllProducts = () =>
-  api.get<Product[]>(`products`).then(response => response.data)
+  api.get<Product[]>('products').then(response => response.data)
