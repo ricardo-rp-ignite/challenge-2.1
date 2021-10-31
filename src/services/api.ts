@@ -11,7 +11,7 @@ export const fetchStockById = (productId: number) =>
 type FetchProductResult = Omit<Product, 'amount'>
 
 export const fetchProductById = (productId: number) =>
-  api.get<FetchProductResult>(`/products/${productId}`).then(response => response.data);
+  api.get<FetchProductResult>(`/products/${productId}`)
 
 export const fetchAllProducts = () =>
-  api.get<Product[]>(`/products/`).then(response => response.data)
+  api.get<Product[]>(`products`).then(response => response.data)
