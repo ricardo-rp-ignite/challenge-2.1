@@ -22,16 +22,13 @@ interface CartContextData {
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
+
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(readCart);
 
-  function findProductIndexById(productId: number) {
-    return cart.findIndex(product => product.id === productId);
-  }
-
   const addProduct = async (productId: number): Promise<void> => {
     try {
-      const productIndex = findProductIndexById(productId)
+      const productIndex = findProductInCart(productId, cart)
       const stock = fetchStockById(productId)
 
       if (productIndex === -1) { // Product not on cart
@@ -68,7 +65,7 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const removeProduct = (productId: number) => {
     try {
-      const productIndex = findProductIndexById(productId)
+      const productIndex = findProductInCart(productId, cart)
       if (productIndex === -1) throw new Error('Product not in cart.');
 
       setCart(oldCart => {
@@ -128,4 +125,8 @@ export function useCart(): CartContextData {
   const context = useContext(CartContext);
 
   return context;
+}
+
+function findProductInCart(productId: number, cart: Product[]) {
+  return cart.findIndex(product => product.id === productId);
 }
