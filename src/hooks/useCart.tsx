@@ -1,6 +1,7 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { toast } from 'react-toastify';
 import { fetchProductById, fetchStockById } from '../services/api';
+import { saveCart, readCart } from '../services/storage'
 import { Product } from '../types';
 
 interface CartProviderProps {
@@ -21,21 +22,8 @@ interface CartContextData {
 
 const CartContext = createContext<CartContextData>({} as CartContextData);
 
-const storageKey = '@RocketShoes:cart';
-const readCart = () => {
-  const storagedCart = localStorage.getItem(storageKey);
-  return storagedCart ? JSON.parse(storagedCart) : [];
-}
-const saveCart = (cart: Product[]) => {
-  localStorage.setItem(storageKey, JSON.stringify(cart));
-}
-
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(readCart);
-
-  // useEffect(() => {
-  //   saveCart(cart)
-  // }, [cart])
 
   function findProductIndexById(productId: number) {
     return cart.findIndex(product => product.id === productId);
